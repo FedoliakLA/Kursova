@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QVector>
+#include <QFrame>
 #include "flat.h"
 
 QT_BEGIN_NAMESPACE
@@ -29,11 +30,14 @@ private:
     void appendFlatToFile(const Flat &flat);
     void loadFlats();
     void applyFilters();
-    void showFlats();
+    void showFlats(const QVector<Flat> &list);
+    QFrame *createFlatCard(const Flat &flat);
     void sortByArea();
     void groupByRooms();
     void analyzeMinMaxRentByDistrict();
     void logMessage(const QString &text);
+    QVector<Flat> searchByDistrictAndRooms(const QVector<Flat> &src, const QString &district, int rooms) const;
+    QVector<Flat> filterByAreaAndRent(const QVector<Flat> &src, double minArea, double minRent, double maxRent) const;
 };
 
 #endif // MAINWINDOW_H

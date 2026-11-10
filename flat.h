@@ -34,6 +34,27 @@ public:
         }
         return *this;
     }
+
+    QString getAddress() const {return address;}
+    QString getDistrict() const {return district;}
+    int getRooms() const {return rooms;}
+    double getArea() const {return area;}
+    int getFloor() const {return floor;}
+    int getTotalFloors() const {return totalFloors;}
+    double getRent() const {return rent;}
+    bool getHasFurniture() const {return hasFurniture;}
+    double pricePerM2() const {return area > 0 ? rent/area : 0;}
+
+    void setAddress(const QString &_address) {address = _address;}
+    void setDistrict(const QString &_district) {district = _district;}
+    void setRooms(int _rooms) {rooms = _rooms;}
+    void setArea(double _area) {area = _area;}
+    void setFloor(int _floor) {floor = _floor;}
+    void setTotalFloors(int _totalFloors) {totalFloors = _totalFloors;}
+    void setRent(double _rent) {rent = _rent;}
+    void setHasFurniture(bool _hasFurniture) {hasFurniture=_hasFurniture;}
+
+
     friend QTextStream &operator<<(QTextStream &out, const Flat &f)
     {
         out << f.address << '\n'

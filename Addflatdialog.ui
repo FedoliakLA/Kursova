@@ -105,37 +105,10 @@
       </widget>
      </item>
      <item row="1" column="1">
-      <widget class="QComboBox" name="cbDistrict">
-       <item>
-        <property name="text">
-         <string>Галицький</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Залізничний</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Личаківський</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Сихівський</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Франківський</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Шевченківський</string>
-        </property>
-       </item>
+      <widget class="QLineEdit" name="leDistrict">
+       <property name="placeholderText">
+        <string>наприклад Галицький</string>
+       </property>
       </widget>
      </item>
      <item row="2" column="0">
@@ -201,10 +174,7 @@
       </widget>
      </item>
      <item row="4" column="1">
-      <widget class="QLineEdit" name="leFloor">
-       <property name="placeholderText">
-        <string>наприклад 5</string>
-       </property>
+      <widget class="QComboBox" name="cbFloor">
       </widget>
      </item>
      <item row="5" column="0">
@@ -215,10 +185,7 @@
       </widget>
      </item>
      <item row="5" column="1">
-      <widget class="QLineEdit" name="leTotalFloors">
-       <property name="placeholderText">
-        <string>наприклад 9</string>
-       </property>
+      <widget class="QComboBox" name="cbTotalFloors">
       </widget>
      </item>
      <item row="6" column="0">

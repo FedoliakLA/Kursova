@@ -1,15 +1,22 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <QMenu>
+#include <QCoreApplication>
 #include "addflatdialog.h"
+#include <QFile>
+#include <QLabel>
+#include <QVBoxLayout>
+
+#include <QDebug>
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
     loadFlats();
-    showFlats();
-
+    showFlats(flats);
+    ui->lblLogoIcon->setPixmap(QPixmap(":/app_icon.jpg").scaled(64, 64, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    qDebug() << dataFilePath();
 }
 
 MainWindow::~MainWindow()
@@ -35,19 +42,58 @@ void MainWindow::on_btnReports_clicked()
         groupByRooms();
 }
 
-void MainWindow::loadFlats()
-{
-    // TODO: завантаження квартир з файлу через operator>>
-}
-
 void MainWindow::applyFilters()
 {
     // TODO: фільтрація за районом, кімнатами, площею, ціною, меблями
 }
 
-void MainWindow::showFlats()
+void MainWindow::showFlats(const QVector<Flat> &list)
 {
-    // TODO: вивід карток у flatsGrid
+    QLayoutItem *item;
+    while ((item = ui->flatsGrid->takeAt(0)) != nullptr) {
+        delete item->widget();
+        delete item;
+    }
+
+    const int columns = 3;
+    for (int i = 0; i < list.size(); ++i) {
+        QFrame *card = createFlatCard(list[i]);
+        ui->flatsGrid->addWidget(card, i / columns, i % columns);
+    }
+
+    int rows = (list.size() + columns - 1) / columns;
+    ui->flatsGrid->addItem(
+        new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding), rows, 0);
+}
+
+QFrame *MainWindow::createFlatCard(const Flat &flat)
+{
+    QFrame *card = new QFrame;
+    card->setObjectName("flatCard");
+    card->setMinimumSize(200, 150);
+
+    QVBoxLayout *layout = new QVBoxLayout(card);
+
+    QLabel *price = new QLabel(QString::number(flat.getRent(), 'f', 0) + " грн");
+    price->setObjectName("lblCardPrice");
+
+    QLabel *address = new QLabel(flat.getAddress());
+    address->setObjectName("lblAdressCap");
+    address->setWordWrap(true);
+
+    QLabel *meta = new QLabel(
+        QString("%1 м², %2 кімн., %3/%4 поверх")
+            .arg(flat.getArea(), 0, 'f', 1)
+            .arg(flat.getRooms())
+            .arg(flat.getFloor())
+            .arg(flat.getTotalFloors())
+        );
+    meta->setObjectName("lblMeta");
+
+    layout->addWidget(price, 0, Qt::AlignLeft);
+    layout->addWidget(address);
+    layout->addWidget(meta);
+    return card;
 }
 
 void MainWindow::sortByArea()
@@ -80,15 +126,44 @@ void MainWindow::on_btnAdd_clicked()
     Flat flat = dialog.getFlat();
     flats.push_back(flat);
     appendFlatToFile(flat);
-    showFlats();
+    showFlats(flats);
 }
 
 QString MainWindow::dataFilePath() const
 {
-    return QString();
+    QString folder = QCoreApplication::applicationDirPath();
+    return folder+"/flats.txt";
 }
 
 void MainWindow::appendFlatToFile(const Flat &flat)
 {
-    Q_UNUSED(flat);
+    QFile file(dataFilePath());
+    if (!file.open(QIODevice::Append | QIODevice::Text)){
+        return;
+    }
+    QTextStream out(&file);
+    out.setEncoding(QStringConverter::Utf8);
+    out.setLocale(QLocale::c());
+    out << flat;
+}
+
+void MainWindow::loadFlats()
+{
+    flats.clear();
+    QFile file(dataFilePath());
+
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)){
+        return;
+    }
+
+    QTextStream in(&file);
+    in.setEncoding(QStringConverter::Utf8);
+    in.setLocale(QLocale::c());
+
+    while(!in.atEnd()){
+        Flat f;
+        in >> f;
+        if(f.getAddress().isEmpty()) break;
+        flats.push_back(f);
+    }
 }
