@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>AddFlatDialog</class>
+ <widget class="QDialog" name="AddFlatDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>480</width>
+    <height>560</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Нова квартира</string>
+  </property>
+  <property name="modal">
+   <bool>true</bool>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">
+    QDialog { background: #ffffff; }
+    QLabel { color: #222222; background: transparent; font-size: 12px; }
+    QLabel#lblDialogTitle { font-size: 18px; font-weight: bold; }
+    QLabel#lblError { color: #d32f2f; font-size: 12px; }
+
+    QLineEdit, QComboBox {
+        color: #222222; background: #ffffff;
+        border: 1px solid #c4c4c4; border-radius: 6px; padding: 6px 8px;
+    }
+    QLineEdit:focus, QComboBox:focus { border: 1px solid #ff7a1a; }
+    QComboBox QAbstractItemView {
+        background: #ffffff; color: #222222; border: 1px solid #c4c4c4;
+        selection-background-color: #ff7a1a; selection-color: #ffffff;
+    }
+
+    QCheckBox { color: #222222; background: transparent; spacing: 6px; }
+    QCheckBox::indicator {
+        width: 16px; height: 16px; border: 2px solid #8a8a8a; border-radius: 4px; background: #ffffff;
+    }
+    QCheckBox::indicator:hover { border-color: #ff7a1a; }
+    QCheckBox::indicator:checked { background: #ff7a1a; border-color: #ff7a1a; }
+
+    QPushButton#btnSave {
+        background: #ff7a1a; color: #ffffff; border: none; border-radius: 8px;
+        padding: 8px 22px; font-weight: bold;
+    }
+    QPushButton#btnSave:hover { background: #e96a0c; }
+    QPushButton#btnCancel {
+        background: #ffffff; color: #222222; border: 1px solid #c4c4c4; border-radius: 8px;
+        padding: 8px 22px;
+    }
+    QPushButton#btnCancel:hover { border-color: #ff7a1a; }
+   </string>
+  </property>
+  <layout class="QVBoxLayout" name="dialogLayout">
+   <property name="spacing">
+    <number>14</number>
+   </property>
+   <property name="leftMargin">
+    <number>24</number>
+   </property>
+   <property name="topMargin">
+    <number>20</number>
+   </property>
+   <property name="rightMargin">
+    <number>24</number>
+   </property>
+   <property name="bottomMargin">
+    <number>20</number>
+   </property>
+   <item>
+    <widget class="QLabel" name="lblDialogTitle">
+     <property name="text">
+      <string>Додати квартиру</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QFormLayout" name="formLayout">
+     <property name="horizontalSpacing">
+      <number>16</number>
+     </property>
+     <property name="verticalSpacing">
+      <number>12</number>
+     </property>
+     <item row="0" column="0">
+      <widget class="QLabel" name="lblAddressCap">
+       <property name="text">
+        <string>Адреса</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QLineEdit" name="leAddress">
+       <property name="placeholderText">
+        <string>вул. Зелена, 5</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="lblDistrictCap">
+       <property name="text">
+        <string>Район</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QComboBox" name="cbDistrict">
+       <item>
+        <property name="text">
+         <string>Галицький</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Залізничний</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Личаківський</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Сихівський</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Франківський</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Шевченківський</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="lblRoomsCap">
+       <property name="text">
+        <string>Кількість кімнат</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QComboBox" name="cbRooms">
+       <item>
+        <property name="text">
+         <string>1</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>2</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>3</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>4</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>5</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>6</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="lblAreaCap">
+       <property name="text">
+        <string>Площа, м²</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QLineEdit" name="leArea">
+       <property name="placeholderText">
+        <string>наприклад 53.5</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="0">
+      <widget class="QLabel" name="lblFloorCap">
+       <property name="text">
+        <string>Поверх</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <widget class="QLineEdit" name="leFloor">
+       <property name="placeholderText">
+        <string>наприклад 5</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="0">
+      <widget class="QLabel" name="lblTotalFloorsCap">
+       <property name="text">
+        <string>Поверхів у будинку</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1">
+      <widget class="QLineEdit" name="leTotalFloors">
+       <property name="placeholderText">
+        <string>наприклад 9</string>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="0">
+      <widget class="QLabel" name="lblRentCap">
+       <property name="text">
+        <string>Оренда, ₴/міс</string>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="1">
+      <widget class="QLineEdit" name="leRent">
+       <property name="placeholderText">
+        <string>наприклад 12000</string>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="0">
+      <widget class="QLabel" name="lblFurnitureCap">
+       <property name="text">
+        <string>Меблі</string>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="1">
+      <widget class="QCheckBox" name="chkFurniture">
+       <property name="text">
+        <string>Є в квартирі</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QLabel" name="lblError">
+     <property name="visible">
+      <bool>false</bool>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <spacer name="dialogSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="buttonsLayout">
+     <item>
+      <spacer name="buttonsSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnCancel">
+       <property name="text">
+        <string>Скасувати</string>
+       </property>
+       <property name="cursor">
+        <cursorShape>PointingHandCursor</cursorShape>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnSave">
+       <property name="text">
+        <string>Додати</string>
+       </property>
+       <property name="default">
+        <bool>true</bool>
+       </property>
+       <property name="cursor">
+        <cursorShape>PointingHandCursor</cursorShape>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>btnCancel</sender>
+   <signal>clicked()</signal>
+   <receiver>AddFlatDialog</receiver>
+   <slot>reject()</slot>
+  </connection>
+ </connections>
+</ui>

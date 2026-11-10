@@ -6,26 +6,731 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>1100</width>
+    <height>720</height>
    </rect>
   </property>
-  <property name="windowTitle">
-   <string>MainWindow</string>
+  <property name="minimumSize">
+   <size>
+    <width>1040</width>
+    <height>640</height>
+   </size>
   </property>
-  <widget class="QWidget" name="centralwidget"/>
-  <widget class="QMenuBar" name="menubar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>800</width>
-     <height>25</height>
-    </rect>
-   </property>
+  <property name="windowTitle">
+   <string>Каталог квартир для довгострокової оренди</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">
+    QMainWindow, QWidget#centralwidget, QWidget#filterPanel, QWidget#flatsContainer { background: #ffffff; }
+    QScrollArea { border: none; background: #ffffff; }
+    QWidget#qt_scrollarea_viewport { background: #ffffff; }
+    QWidget#sidebar { background: #000000; }
+
+    QLabel { color: #222222; background: transparent; }
+    QLabel#lblLogo { color: #ff7a1a; font-size: 26px; font-weight: bold; }
+    QLabel#capDistrict, QLabel#capRooms, QLabel#capArea, QLabel#capPrice { color: #222222; font-size: 12px; }
+    QLabel#lblAnalytics { color: #222222; font-size: 13px; font-weight: bold; }
+    QLabel#lblFooter { color: #888888; font-size: 11px; }
+    QLabel#lblAddress { color: #222222; font-size: 13px; font-weight: bold; }
+    QLabel#lblMeta { color: #555555; font-size: 12px; }
+    QLabel#lblCardPrice {
+        background: #ff7a1a; color: #ffffff; border-radius: 8px; padding: 4px 10px; font-weight: bold;
+    }
+
+    QCheckBox { color: #222222; background: transparent; spacing: 6px; }
+    QCheckBox::indicator {
+        width: 16px; height: 16px; border: 2px solid #8a8a8a; border-radius: 4px; background: #ffffff;
+    }
+    QCheckBox::indicator:hover { border-color: #ff7a1a; }
+    QCheckBox::indicator:checked { background: #ff7a1a; border-color: #ff7a1a; }
+
+    QComboBox, QLineEdit {
+        color: #222222; background: #ffffff;
+        border: 1px solid #c4c4c4; border-radius: 6px; padding: 4px 8px;
+    }
+    QComboBox:disabled, QLineEdit:disabled { background: #f0f0f0; color: #aaaaaa; border-color: #e0e0e0; }
+    QComboBox QAbstractItemView {
+        background: #ffffff; color: #222222; border: 1px solid #c4c4c4;
+        selection-background-color: #ff7a1a; selection-color: #ffffff;
+    }
+
+    QMenu { background: #ffffff; color: #222222; border: 1px solid #d0d0d0; padding: 4px; }
+    QMenu::item { padding: 8px 22px; border-radius: 6px; }
+    QMenu::item:selected { background: #ff7a1a; color: #ffffff; }
+
+    QPushButton#btnFilters, QPushButton#btnReports {
+        color: #ffffff; background: transparent; border: none;
+        text-align: left; padding: 12px 16px; font-size: 14px; border-radius: 8px;
+    }
+    QPushButton#btnFilters:checked, QPushButton#btnFilters:hover, QPushButton#btnReports:hover {
+        background: #ff7a1a;
+    }
+
+    QPushButton#btnAdd {
+        background: #ff7a1a; color: #ffffff; border: none; border-radius: 8px;
+        font-size: 20px; font-weight: bold; padding: 0;
+    }
+    QPushButton#btnAdd:hover { background: #e96a0c; }
+
+    QPushButton#btnApply {
+        background: #ff7a1a; color: #ffffff; border: none; border-radius: 8px;
+        padding: 8px 18px; font-weight: bold;
+    }
+    QPushButton#btnApply:hover { background: #e96a0c; }
+
+    QFrame#flatCard {
+        background: #ffffff; border: 1px solid #e3e3e3; border-radius: 12px;
+    }
+
+    QTextEdit#logView {
+        color: #222222; background: #ffffff; border: 1px solid #d0d0d0; border-radius: 8px;
+        font-family: Consolas, monospace; font-size: 12px;
+    }
+   </string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QHBoxLayout" name="mainLayout">
+    <property name="spacing">
+     <number>0</number>
+    </property>
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
+    <item>
+     <widget class="QWidget" name="sidebar" native="true">
+      <property name="minimumSize">
+       <size>
+        <width>200</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>200</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <layout class="QVBoxLayout" name="sidebarLayout">
+       <property name="spacing">
+        <number>8</number>
+       </property>
+       <property name="leftMargin">
+        <number>12</number>
+       </property>
+       <property name="topMargin">
+        <number>20</number>
+       </property>
+       <property name="rightMargin">
+        <number>12</number>
+       </property>
+       <property name="bottomMargin">
+        <number>20</number>
+       </property>
+       <item>
+        <widget class="QLabel" name="lblLogo">
+         <property name="text">
+          <string>SayMyНайм</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="sidebarSpacerTop">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="addRow">
+         <item>
+          <spacer name="addSpacerLeft">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btnAdd">
+           <property name="minimumSize">
+            <size>
+             <width>58</width>
+             <height>36</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>58</width>
+             <height>36</height>
+            </size>
+           </property>
+           <property name="toolTip">
+            <string>Додати квартиру</string>
+           </property>
+           <property name="text">
+            <string>+</string>
+           </property>
+           <property name="cursor">
+            <cursorShape>PointingHandCursor</cursorShape>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="addSpacerRight">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnFilters">
+         <property name="text">
+          <string>Фільтри</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
+         </property>
+         <property name="cursor">
+          <cursorShape>PointingHandCursor</cursorShape>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnReports">
+         <property name="text">
+          <string>Звіти</string>
+         </property>
+         <property name="cursor">
+          <cursorShape>PointingHandCursor</cursorShape>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="sidebarSpacerBottom">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <layout class="QVBoxLayout" name="contentLayout">
+      <property name="spacing">
+       <number>10</number>
+      </property>
+      <property name="leftMargin">
+       <number>16</number>
+      </property>
+      <property name="topMargin">
+       <number>12</number>
+      </property>
+      <property name="rightMargin">
+       <number>16</number>
+      </property>
+      <property name="bottomMargin">
+       <number>12</number>
+      </property>
+      <item>
+       <widget class="QWidget" name="filterPanel" native="true">
+        <property name="visible">
+         <bool>false</bool>
+        </property>
+        <layout class="QGridLayout" name="filterGrid">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <property name="horizontalSpacing">
+          <number>16</number>
+         </property>
+         <property name="verticalSpacing">
+          <number>12</number>
+         </property>
+         <item row="0" column="0">
+          <layout class="QVBoxLayout" name="districtLayout">
+           <property name="spacing">
+            <number>4</number>
+           </property>
+           <item>
+            <layout class="QHBoxLayout" name="districtHeader">
+             <item>
+              <widget class="QCheckBox" name="chkUseDistrict">
+               <property name="toolTip">
+                <string>Застосовувати фільтр за районом</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="capDistrict">
+               <property name="text">
+                <string>Район</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="districtHeaderSpacer">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>10</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <widget class="QComboBox" name="cbDistrict">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>190</width>
+               <height>0</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item row="0" column="1">
+          <layout class="QVBoxLayout" name="roomsLayout">
+           <property name="spacing">
+            <number>4</number>
+           </property>
+           <item>
+            <layout class="QHBoxLayout" name="roomsHeader">
+             <item>
+              <widget class="QCheckBox" name="chkUseRooms">
+               <property name="toolTip">
+                <string>Застосовувати фільтр за кількістю кімнат</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="capRooms">
+               <property name="text">
+                <string>Кімнат</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="roomsHeaderSpacer">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>10</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <widget class="QComboBox" name="cbRooms">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>100</width>
+               <height>0</height>
+              </size>
+             </property>
+             <item>
+              <property name="text">
+               <string>1</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>2</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>3</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>4</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>5+</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item row="0" column="2">
+          <layout class="QVBoxLayout" name="areaLayout">
+           <property name="spacing">
+            <number>4</number>
+           </property>
+           <item>
+            <layout class="QHBoxLayout" name="areaHeader">
+             <item>
+              <widget class="QCheckBox" name="chkUseArea">
+               <property name="toolTip">
+                <string>Застосовувати фільтр за площею</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="capArea">
+               <property name="text">
+                <string>Площа (м²)</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="areaHeaderSpacer">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>10</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="areaRow">
+             <item>
+              <widget class="QLineEdit" name="leAreaMin">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>90</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="placeholderText">
+                <string>від 30</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="lblAreaDash">
+               <property name="text">
+                <string>-</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="leAreaMax">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>90</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="placeholderText">
+                <string>до 80</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </item>
+         <item row="0" column="3">
+          <layout class="QVBoxLayout" name="priceLayout">
+           <property name="spacing">
+            <number>4</number>
+           </property>
+           <item>
+            <layout class="QHBoxLayout" name="priceHeader">
+             <item>
+              <widget class="QCheckBox" name="chkUsePrice">
+               <property name="toolTip">
+                <string>Застосовувати фільтр за вартістю оренди</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="capPrice">
+               <property name="text">
+                <string>Оренда (₴/міс)</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="priceHeaderSpacer">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>10</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="priceRow">
+             <item>
+              <widget class="QLineEdit" name="lePriceMin">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>110</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="placeholderText">
+                <string>від 5000</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="lblPriceDash">
+               <property name="text">
+                <string>-</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="lePriceMax">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>110</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="placeholderText">
+                <string>до 20000</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </item>
+         <item row="1" column="0" colspan="2">
+          <layout class="QVBoxLayout" name="furnitureLayout">
+           <property name="spacing">
+            <number>4</number>
+           </property>
+           <item>
+            <widget class="QCheckBox" name="chkFurniture">
+             <property name="toolTip">
+              <string>Лише квартири з меблями. Можна обмежити ціну за м²</string>
+             </property>
+             <property name="text">
+              <string>Тільки з меблями</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="leMaxPerM2">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="placeholderText">
+              <string>Ціна за м² до, наприклад 250</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item row="1" column="3" alignment="Qt::AlignRight|Qt::AlignBottom">
+          <widget class="QPushButton" name="btnApply">
+           <property name="text">
+            <string>Застосувати</string>
+           </property>
+           <property name="cursor">
+            <cursorShape>PointingHandCursor</cursorShape>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QScrollArea" name="scrollFlats">
+        <property name="widgetResizable">
+         <bool>true</bool>
+        </property>
+        <widget class="QWidget" name="flatsContainer">
+         <property name="geometry">
+          <rect>
+           <x>0</x>
+           <y>0</y>
+           <width>700</width>
+           <height>300</height>
+          </rect>
+         </property>
+         <layout class="QGridLayout" name="flatsGrid">
+          <property name="spacing">
+           <number>12</number>
+          </property>
+         </layout>
+        </widget>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="lblAnalytics">
+        <property name="text">
+         <string>Аналітика та звіти</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QTextEdit" name="logView">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+        <property name="maximumHeight">
+         <number>150</number>
+        </property>
+        <property name="placeholderText">
+         <string>Тут з'являтимуться результати аналізу</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="lblFooter">
+        <property name="text">
+         <string>C++ Qt Final Coursework Project 2024</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>btnFilters</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>filterPanel</receiver>
+   <slot>setVisible(bool)</slot>
+  </connection>
+  <connection>
+   <sender>chkUseDistrict</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>cbDistrict</receiver>
+   <slot>setEnabled(bool)</slot>
+  </connection>
+  <connection>
+   <sender>chkUseRooms</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>cbRooms</receiver>
+   <slot>setEnabled(bool)</slot>
+  </connection>
+  <connection>
+   <sender>chkUseArea</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>leAreaMin</receiver>
+   <slot>setEnabled(bool)</slot>
+  </connection>
+  <connection>
+   <sender>chkUseArea</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>leAreaMax</receiver>
+   <slot>setEnabled(bool)</slot>
+  </connection>
+  <connection>
+   <sender>chkUsePrice</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>lePriceMin</receiver>
+   <slot>setEnabled(bool)</slot>
+  </connection>
+  <connection>
+   <sender>chkUsePrice</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>lePriceMax</receiver>
+   <slot>setEnabled(bool)</slot>
+  </connection>
+  <connection>
+   <sender>chkFurniture</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>leMaxPerM2</receiver>
+   <slot>setEnabled(bool)</slot>
+  </connection>
+ </connections>
 </ui>
