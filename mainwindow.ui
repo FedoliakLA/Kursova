@@ -72,11 +72,20 @@
     }
     QPushButton#btnAdd:hover { background: #e96a0c; }
 
-    QPushButton#btnApply {
+    QPushButton#btnApply, QPushButton#btnSort {
         background: #ff7a1a; color: #ffffff; border: none; border-radius: 8px;
         padding: 8px 18px; font-weight: bold;
     }
-    QPushButton#btnApply:hover { background: #e96a0c; }
+    QPushButton#btnApply:hover, QPushButton#btnSort:hover { background: #e96a0c; }
+
+    QPushButton#btnSortDir {
+        background: #ffffff; color: #222222; border: 1px solid #c4c4c4; border-radius: 6px; font-size: 16px;
+    }
+    QPushButton#btnSortDir:hover { border-color: #ff7a1a; }
+    QPushButton#btnSortDir:checked { background: #ff7a1a; color: #ffffff; border-color: #ff7a1a; }
+
+    QLabel#lblGroupTitle { color: #222222; font-size: 15px; font-weight: bold; }
+    QFrame#groupLine { background: #e3e3e3; border: none; }
 
     QFrame#flatCard {
         background: #ffffff; border: 1px solid #e3e3e3; border-radius: 12px;
@@ -646,6 +655,81 @@
          </item>
         </layout>
        </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="sortRow">
+        <property name="spacing">
+         <number>8</number>
+        </property>
+        <item>
+         <widget class="QLabel" name="lblSortCap">
+          <property name="text">
+           <string>Сортувати за</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="cbSortBy">
+          <property name="minimumSize">
+           <size>
+            <width>170</width>
+            <height>0</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btnSortDir">
+          <property name="minimumSize">
+           <size>
+            <width>40</width>
+            <height>32</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>40</width>
+            <height>32</height>
+           </size>
+          </property>
+          <property name="toolTip">
+           <string>↑ за зростанням, ↓ за спаданням</string>
+          </property>
+          <property name="text">
+           <string>↑</string>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
+          </property>
+          <property name="cursor">
+           <cursorShape>PointingHandCursor</cursorShape>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btnSort">
+          <property name="text">
+           <string>Сортувати</string>
+          </property>
+          <property name="cursor">
+           <cursorShape>PointingHandCursor</cursorShape>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="sortSpacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
       </item>
       <item>
        <widget class="QScrollArea" name="scrollFlats">
