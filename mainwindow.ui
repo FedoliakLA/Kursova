@@ -87,6 +87,43 @@
     QLabel#lblGroupTitle { color: #222222; font-size: 15px; font-weight: bold; }
     QFrame#groupLine { background: #e3e3e3; border: none; }
 
+    QMenuBar { background: #ffffff; color: #222222; border-bottom: 1px solid #e3e3e3; }
+    QMenuBar::item { background: transparent; padding: 6px 12px; }
+    QMenuBar::item:selected { background: #ff7a1a; color: #ffffff; border-radius: 6px; }
+    QMenu::separator { height: 1px; background: #e3e3e3; margin: 4px 8px; }
+    QMenu::item:disabled { color: #aaaaaa; }
+    QToolBar { background: #ffffff; border: none; border-bottom: 1px solid #e3e3e3; spacing: 4px; padding: 4px; }
+    QToolButton { color: #222222; background: transparent; border: none; border-radius: 6px; padding: 6px 10px; }
+    QToolButton:hover { background: #ffe3cc; }
+    QToolButton:checked { background: #ff7a1a; color: #ffffff; }
+    QStatusBar { background: #f7f7f7; color: #555555; border-top: 1px solid #e3e3e3; }
+    QToolTip { color: #222222; background: #ffffff; border: 1px solid #c4c4c4; padding: 4px; }
+
+    QSpinBox {
+        color: #222222; background: #ffffff;
+        border: 1px solid #c4c4c4; border-radius: 6px;
+        padding: 4px 26px 4px 8px;
+    }
+    QSpinBox:focus { border: 1px solid #ff7a1a; }
+    QSpinBox:disabled { background: #f0f0f0; color: #aaaaaa; border-color: #e0e0e0; }
+    QSpinBox::up-button {
+        subcontrol-origin: border; subcontrol-position: top right; width: 22px;
+        border: none; border-left: 1px solid #e3e3e3; border-top-right-radius: 6px; background: transparent;
+    }
+    QSpinBox::down-button {
+        subcontrol-origin: border; subcontrol-position: bottom right; width: 22px;
+        border: none; border-left: 1px solid #e3e3e3; border-bottom-right-radius: 6px; background: transparent;
+    }
+    QSpinBox::up-button:hover, QSpinBox::down-button:hover { background: #ffe3cc; }
+    QSpinBox::up-arrow { image: url(:/arrow_up.png); width: 12px; height: 12px; }
+    QSpinBox::down-arrow { image: url(:/arrow_down.png); width: 12px; height: 12px; }
+    QSpinBox QLineEdit { border: none; background: transparent; padding: 0; }
+    QPushButton#btnReset {
+        background: #ffffff; color: #222222; border: 1px solid #c4c4c4; border-radius: 8px;
+        padding: 8px 18px;
+    }
+    QPushButton#btnReset:hover { border-color: #ff7a1a; }
+    QFrame#flatCard:hover { border: 1px solid #ff7a1a; }
     QFrame#flatCard {
         background: #ffffff; border: 1px solid #e3e3e3; border-radius: 12px;
     }
@@ -145,41 +182,57 @@
         <number>20</number>
        </property>
        <item>
-        <widget class="QLabel" name="lblLogoIcon">
-         <property name="minimumSize">
-          <size>
-           <width>0</width>
-           <height>72</height>
-          </size>
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <property name="bottomMargin">
+          <number>0</number>
          </property>
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>72</height>
-          </size>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
+         <item>
+          <widget class="QLabel" name="lblLogoIcon">
+           <property name="minimumSize">
+            <size>
+             <width>72</width>
+             <height>72</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>72</width>
+             <height>72</height>
+            </size>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="pixmap">
+            <pixmap resource="resources.qrc">:/icons/app_icon.jpg</pixmap>
+           </property>
+           <property name="scaledContents">
+            <bool>true</bool>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignmentFlag::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
        <item>
         <widget class="QLabel" name="lblLogo">
          <property name="text">
           <string>SayMyНайм</string>
          </property>
+         <property name="scaledContents">
+          <bool>true</bool>
+         </property>
          <property name="alignment">
-          <set>Qt::AlignCenter</set>
+          <set>Qt::AlignmentFlag::AlignCenter</set>
          </property>
         </widget>
        </item>
        <item>
         <spacer name="sidebarSpacerTop">
          <property name="orientation">
-          <enum>Qt::Vertical</enum>
+          <enum>Qt::Orientation::Vertical</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
@@ -194,7 +247,7 @@
          <item>
           <spacer name="addSpacerLeft">
            <property name="orientation">
-            <enum>Qt::Horizontal</enum>
+            <enum>Qt::Orientation::Horizontal</enum>
            </property>
            <property name="sizeHint" stdset="0">
             <size>
@@ -218,21 +271,21 @@
              <height>36</height>
             </size>
            </property>
+           <property name="cursor">
+            <cursorShape>PointingHandCursor</cursorShape>
+           </property>
            <property name="toolTip">
-            <string>Додати квартиру</string>
+            <string>Додати нову квартиру (Ctrl+N)</string>
            </property>
            <property name="text">
             <string>+</string>
-           </property>
-           <property name="cursor">
-            <cursorShape>PointingHandCursor</cursorShape>
            </property>
           </widget>
          </item>
          <item>
           <spacer name="addSpacerRight">
            <property name="orientation">
-            <enum>Qt::Horizontal</enum>
+            <enum>Qt::Orientation::Horizontal</enum>
            </property>
            <property name="sizeHint" stdset="0">
             <size>
@@ -246,6 +299,12 @@
        </item>
        <item>
         <widget class="QPushButton" name="btnFilters">
+         <property name="cursor">
+          <cursorShape>PointingHandCursor</cursorShape>
+         </property>
+         <property name="toolTip">
+          <string>Показати або сховати панель фільтрів (Ctrl+F)</string>
+         </property>
          <property name="text">
           <string>Фільтри</string>
          </property>
@@ -255,25 +314,25 @@
          <property name="checked">
           <bool>false</bool>
          </property>
-         <property name="cursor">
-          <cursorShape>PointingHandCursor</cursorShape>
-         </property>
         </widget>
        </item>
        <item>
         <widget class="QPushButton" name="btnReports">
-         <property name="text">
-          <string>Звіти</string>
-         </property>
          <property name="cursor">
           <cursorShape>PointingHandCursor</cursorShape>
+         </property>
+         <property name="toolTip">
+          <string>Відкрити меню звітів</string>
+         </property>
+         <property name="text">
+          <string>Звіти</string>
          </property>
         </widget>
        </item>
        <item>
         <spacer name="sidebarSpacerBottom">
          <property name="orientation">
-          <enum>Qt::Vertical</enum>
+          <enum>Qt::Orientation::Vertical</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
@@ -351,7 +410,7 @@
              <item>
               <spacer name="districtHeaderSpacer">
                <property name="orientation">
-                <enum>Qt::Horizontal</enum>
+                <enum>Qt::Orientation::Horizontal</enum>
                </property>
                <property name="sizeHint" stdset="0">
                 <size>
@@ -373,6 +432,9 @@
                <width>190</width>
                <height>0</height>
               </size>
+             </property>
+             <property name="toolTip">
+              <string>Район для пошуку. Список наповнюється районами з доданих квартир</string>
              </property>
             </widget>
            </item>
@@ -402,7 +464,7 @@
              <item>
               <spacer name="roomsHeaderSpacer">
                <property name="orientation">
-                <enum>Qt::Horizontal</enum>
+                <enum>Qt::Orientation::Horizontal</enum>
                </property>
                <property name="sizeHint" stdset="0">
                 <size>
@@ -415,7 +477,7 @@
             </layout>
            </item>
            <item>
-            <widget class="QComboBox" name="cbRooms">
+            <widget class="QSpinBox" name="spRooms">
              <property name="enabled">
               <bool>false</bool>
              </property>
@@ -425,31 +487,18 @@
                <height>0</height>
               </size>
              </property>
-             <item>
-              <property name="text">
-               <string>1</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>2</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>3</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>4</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>5+</string>
-              </property>
-             </item>
+             <property name="toolTip">
+              <string>Кількість кімнат</string>
+             </property>
+             <property name="minimum">
+              <number>1</number>
+             </property>
+             <property name="maximum">
+              <number>10</number>
+             </property>
+             <property name="value">
+              <number>1</number>
+             </property>
             </widget>
            </item>
           </layout>
@@ -478,7 +527,7 @@
              <item>
               <spacer name="areaHeaderSpacer">
                <property name="orientation">
-                <enum>Qt::Horizontal</enum>
+                <enum>Qt::Orientation::Horizontal</enum>
                </property>
                <property name="sizeHint" stdset="0">
                 <size>
@@ -503,8 +552,11 @@
                  <height>16777215</height>
                 </size>
                </property>
+               <property name="toolTip">
+                <string>Мінімальна площа, м²</string>
+               </property>
                <property name="placeholderText">
-                <string>від 30</string>
+                <string>від</string>
                </property>
               </widget>
              </item>
@@ -526,8 +578,11 @@
                  <height>16777215</height>
                 </size>
                </property>
+               <property name="toolTip">
+                <string>Максимальна площа, м². Порожнє поле означає без обмеження</string>
+               </property>
                <property name="placeholderText">
-                <string>до 80</string>
+                <string>до</string>
                </property>
               </widget>
              </item>
@@ -559,7 +614,7 @@
              <item>
               <spacer name="priceHeaderSpacer">
                <property name="orientation">
-                <enum>Qt::Horizontal</enum>
+                <enum>Qt::Orientation::Horizontal</enum>
                </property>
                <property name="sizeHint" stdset="0">
                 <size>
@@ -584,8 +639,11 @@
                  <height>16777215</height>
                 </size>
                </property>
+               <property name="toolTip">
+                <string>Мінімальна оренда, ₴ на місяць</string>
+               </property>
                <property name="placeholderText">
-                <string>від 5000</string>
+                <string>від</string>
                </property>
               </widget>
              </item>
@@ -607,8 +665,11 @@
                  <height>16777215</height>
                 </size>
                </property>
+               <property name="toolTip">
+                <string>Максимальна оренда, ₴ на місяць. Порожнє поле означає без обмеження</string>
+               </property>
                <property name="placeholderText">
-                <string>до 20000</string>
+                <string>до</string>
                </property>
               </widget>
              </item>
@@ -636,22 +697,48 @@
              <property name="enabled">
               <bool>false</bool>
              </property>
+             <property name="toolTip">
+              <string>Максимальна ціна за м² для квартир з меблями. Порожнє поле означає без обмеження</string>
+             </property>
              <property name="placeholderText">
-              <string>Ціна за м² до, наприклад 250</string>
+              <string>Ціна за м² до</string>
              </property>
             </widget>
            </item>
           </layout>
          </item>
-         <item row="1" column="3" alignment="Qt::AlignRight|Qt::AlignBottom">
-          <widget class="QPushButton" name="btnApply">
-           <property name="text">
-            <string>Застосувати</string>
+         <item row="1" column="3">
+          <layout class="QHBoxLayout" name="applyRow">
+           <property name="spacing">
+            <number>8</number>
            </property>
-           <property name="cursor">
-            <cursorShape>PointingHandCursor</cursorShape>
-           </property>
-          </widget>
+           <item>
+            <widget class="QPushButton" name="btnReset">
+             <property name="cursor">
+              <cursorShape>PointingHandCursor</cursorShape>
+             </property>
+             <property name="toolTip">
+              <string>Вимкнути всі фільтри й показати всі квартири (Ctrl+R)</string>
+             </property>
+             <property name="text">
+              <string>Скинути</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="btnApply">
+             <property name="cursor">
+              <cursorShape>PointingHandCursor</cursorShape>
+             </property>
+             <property name="toolTip">
+              <string>Показати квартири, що відповідають увімкненим фільтрам (Ctrl+Enter)</string>
+             </property>
+             <property name="text">
+              <string>Застосувати</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </item>
         </layout>
        </widget>
@@ -676,6 +763,9 @@
             <height>0</height>
            </size>
           </property>
+          <property name="toolTip">
+           <string>Поле, за яким сортувати показані квартири</string>
+          </property>
          </widget>
         </item>
         <item>
@@ -692,6 +782,9 @@
             <height>32</height>
            </size>
           </property>
+          <property name="cursor">
+           <cursorShape>PointingHandCursor</cursorShape>
+          </property>
           <property name="toolTip">
            <string>↑ за зростанням, ↓ за спаданням</string>
           </property>
@@ -701,25 +794,25 @@
           <property name="checkable">
            <bool>true</bool>
           </property>
-          <property name="cursor">
-           <cursorShape>PointingHandCursor</cursorShape>
-          </property>
          </widget>
         </item>
         <item>
          <widget class="QPushButton" name="btnSort">
-          <property name="text">
-           <string>Сортувати</string>
-          </property>
           <property name="cursor">
            <cursorShape>PointingHandCursor</cursorShape>
+          </property>
+          <property name="toolTip">
+           <string>Відсортувати показані квартири методом простої вибірки (F6)</string>
+          </property>
+          <property name="text">
+           <string>Сортувати</string>
           </property>
          </widget>
         </item>
         <item>
          <spacer name="sortSpacer">
           <property name="orientation">
-           <enum>Qt::Horizontal</enum>
+           <enum>Qt::Orientation::Horizontal</enum>
           </property>
           <property name="sizeHint" stdset="0">
            <size>
@@ -741,8 +834,8 @@
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>700</width>
-           <height>300</height>
+           <width>868</width>
+           <height>336</height>
           </rect>
          </property>
          <layout class="QGridLayout" name="flatsGrid">
@@ -762,11 +855,11 @@
       </item>
       <item>
        <widget class="QTextEdit" name="logView">
+        <property name="toolTip">
+         <string>Журнал дій і результати звітів</string>
+        </property>
         <property name="readOnly">
          <bool>true</bool>
-        </property>
-        <property name="maximumHeight">
-         <number>150</number>
         </property>
         <property name="placeholderText">
          <string>Тут з'являтимуться результати аналізу</string>
@@ -776,10 +869,10 @@
       <item>
        <widget class="QLabel" name="lblFooter">
         <property name="text">
-         <string>C++ Qt Final Coursework Project 2024</string>
+         <string>Fedoliak Liubomyr Antonovych. Kursova 2026</string>
         </property>
         <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignVCenter</set>
+         <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
         </property>
        </widget>
       </item>
@@ -787,56 +880,368 @@
     </item>
    </layout>
   </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1100</width>
+     <height>32</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>Панель інструментів</string>
+   </property>
+   <property name="movable">
+    <bool>false</bool>
+   </property>
+   <property name="toolButtonStyle">
+    <enum>Qt::ToolButtonStyle::ToolButtonTextOnly</enum>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionAddFlat"/>
+   <addaction name="separator"/>
+   <addaction name="actionToggleFilters"/>
+   <addaction name="actionApplyFilters"/>
+   <addaction name="actionResetFilters"/>
+   <addaction name="separator"/>
+   <addaction name="actionSort"/>
+   <addaction name="separator"/>
+   <addaction name="actionReportMinMax"/>
+   <addaction name="actionReportGroups"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionAddFlat">
+   <property name="text">
+    <string>Додати квартиру</string>
+   </property>
+   <property name="toolTip">
+    <string>Додати нову квартиру (Ctrl+N)</string>
+   </property>
+   <property name="statusTip">
+    <string>Відкрити форму додавання нової квартири</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="text">
+    <string>Вихід</string>
+   </property>
+   <property name="toolTip">
+    <string>Закрити програму (Ctrl+Q)</string>
+   </property>
+   <property name="statusTip">
+    <string>Закрити програму</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
+   </property>
+  </action>
+  <action name="actionToggleFilters">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Показати фільтри</string>
+   </property>
+   <property name="iconText">
+    <string>Фільтри</string>
+   </property>
+   <property name="toolTip">
+    <string>Показати або сховати панель фільтрів (Ctrl+F)</string>
+   </property>
+   <property name="statusTip">
+    <string>Показати або сховати панель фільтрів</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+F</string>
+   </property>
+  </action>
+  <action name="actionApplyFilters">
+   <property name="text">
+    <string>Застосувати фільтри</string>
+   </property>
+   <property name="iconText">
+    <string>Застосувати</string>
+   </property>
+   <property name="toolTip">
+    <string>Показати квартири за увімкненими фільтрами (Ctrl+Enter)</string>
+   </property>
+   <property name="statusTip">
+    <string>Показати квартири, що відповідають увімкненим фільтрам</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Return</string>
+   </property>
+  </action>
+  <action name="actionResetFilters">
+   <property name="text">
+    <string>Скинути фільтри</string>
+   </property>
+   <property name="iconText">
+    <string>Скинути</string>
+   </property>
+   <property name="toolTip">
+    <string>Вимкнути всі фільтри й показати всі квартири (Ctrl+R)</string>
+   </property>
+   <property name="statusTip">
+    <string>Вимкнути всі фільтри й показати всі квартири</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+R</string>
+   </property>
+  </action>
+  <action name="actionSort">
+   <property name="text">
+    <string>Сортувати</string>
+   </property>
+   <property name="toolTip">
+    <string>Відсортувати показані квартири за обраним полем (F6)</string>
+   </property>
+   <property name="statusTip">
+    <string>Відсортувати показані квартири за обраним полем і напрямком</string>
+   </property>
+   <property name="shortcut">
+    <string>F6</string>
+   </property>
+  </action>
+  <action name="actionReportMinMax">
+   <property name="text">
+    <string>Мін. і макс. оренда по районах</string>
+   </property>
+   <property name="iconText">
+    <string>Мін/макс по районах</string>
+   </property>
+   <property name="toolTip">
+    <string>Квартири з найменшою та найбільшою орендою в кожному районі (Ctrl+1)</string>
+   </property>
+   <property name="statusTip">
+    <string>Визначити квартири з мінімальною та максимальною орендою в кожному районі</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+1</string>
+   </property>
+  </action>
+  <action name="actionReportGroups">
+   <property name="text">
+    <string>Групування за кількістю кімнат</string>
+   </property>
+   <property name="iconText">
+    <string>Групи за кімнатами</string>
+   </property>
+   <property name="toolTip">
+    <string>Згрупувати квартири за кімнатами та відсортувати за орендою (Ctrl+2)</string>
+   </property>
+   <property name="statusTip">
+    <string>Згрупувати квартири за кількістю кімнат і відсортувати за орендою в групі</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+2</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>Про програму</string>
+   </property>
+   <property name="toolTip">
+    <string>Відомості про програму (F1)</string>
+   </property>
+   <property name="statusTip">
+    <string>Відомості про програму</string>
+   </property>
+   <property name="shortcut">
+    <string>F1</string>
+   </property>
+  </action>
  </widget>
- <resources/>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
  <connections>
-  <connection>
-   <sender>btnFilters</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>filterPanel</receiver>
-   <slot>setVisible(bool)</slot>
-  </connection>
   <connection>
    <sender>chkUseDistrict</sender>
    <signal>toggled(bool)</signal>
    <receiver>cbDistrict</receiver>
    <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
   </connection>
   <connection>
    <sender>chkUseRooms</sender>
    <signal>toggled(bool)</signal>
-   <receiver>cbRooms</receiver>
+   <receiver>spRooms</receiver>
    <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
   </connection>
   <connection>
    <sender>chkUseArea</sender>
    <signal>toggled(bool)</signal>
    <receiver>leAreaMin</receiver>
    <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
   </connection>
   <connection>
    <sender>chkUseArea</sender>
    <signal>toggled(bool)</signal>
    <receiver>leAreaMax</receiver>
    <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
   </connection>
   <connection>
    <sender>chkUsePrice</sender>
    <signal>toggled(bool)</signal>
    <receiver>lePriceMin</receiver>
    <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
   </connection>
   <connection>
    <sender>chkUsePrice</sender>
    <signal>toggled(bool)</signal>
    <receiver>lePriceMax</receiver>
    <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
   </connection>
   <connection>
    <sender>chkFurniture</sender>
    <signal>toggled(bool)</signal>
    <receiver>leMaxPerM2</receiver>
    <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionExit</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionToggleFilters</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>btnFilters</receiver>
+   <slot>setChecked(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btnFilters</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>actionToggleFilters</receiver>
+   <slot>setChecked(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btnReset</sender>
+   <signal>clicked()</signal>
+   <receiver>actionResetFilters</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
   </connection>
  </connections>
 </ui>

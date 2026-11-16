@@ -28,6 +28,11 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         app.rc
         addflatdialog.h addflatdialog.cpp
         Addflatdialog.ui
+        cerror.h
+        flatstorage.h
+        flatstorage.cpp
+        flatcard.h flatcatalog.h flatfilter.h
+        flatcard.cpp flatcatalog.cpp
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET Kursova APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR

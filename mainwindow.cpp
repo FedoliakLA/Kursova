@@ -1,34 +1,118 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include <QMenu>
-#include <QCoreApplication>
 #include "addflatdialog.h"
-#include <QFile>
-#include <QLabel>
-#include <QVBoxLayout>
-#include <QTime>
+#include "cerror.h"
+#include "flatcard.h"
 
-#include <QDebug>
+#include <QCoreApplication>
+#include <QLabel>
+#include <QMenu>
+#include <QMessageBox>
+#include <QPixmap>
+#include <QRegularExpression>
+#include <QRegularExpressionValidator>
+#include <QTime>
+#include <QVBoxLayout>
+
+namespace {
+
+double parseNumber(const QString &text, double emptyValue, const QString &fieldName)
+{
+    QString trimmed = text.trimmed();
+    if (trimmed.isEmpty())
+        return emptyValue;
+
+    bool ok = false;
+    double value = trimmed.replace(',', '.').toDouble(&ok);
+    if (!ok || value < 0)
+        throw CError(QString("Поле «%1» має містити невід'ємне число").arg(fieldName));
+    return value;
+}
+
+}
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
+    , catalog(QCoreApplication::applicationDirPath() + "/flats.txt")
+    , filterAnimation(nullptr)
 {
     ui->setupUi(this);
-    loadFlats();
-    showFlats(flats);
-    fillDistricts();
-    ui->cbSortBy->addItem("Площа", SortByArea);
-    ui->cbSortBy->addItem("Оренда", SortByRent);
-    ui->cbSortBy->addItem("Кількість кімнат", SortByRooms);
-    ui->cbSortBy->addItem("Ціна за м²", SortByPricePerM2);
-    ui->cbSortBy->addItem("Поверх", SortByFloor);
-    ui->lblLogoIcon->setPixmap(QPixmap(":/app_icon.jpg").scaled(64, 64, Qt::KeepAspectRatio, Qt::SmoothTransformation));
-    qDebug() << dataFilePath();
+
+    ui->spRooms->setRange(FlatLimits::MinRooms, FlatLimits::MaxRooms);
+    ui->spRooms->setToolTip(QString("Кількість кімнат (від %1 до %2)")
+                                .arg(FlatLimits::MinRooms).arg(FlatLimits::MaxRooms));
+
+    QRegularExpression areaPattern(R"(^\d{0,4}([.,]\d{0,2})?$)");
+    QRegularExpression rentPattern(R"(^\d{0,7}([.,]\d{0,2})?$)");
+    QRegularExpression perM2Pattern(R"(^\d{0,5}([.,]\d{0,2})?$)");
+    ui->leAreaMin->setValidator(new QRegularExpressionValidator(areaPattern, this));
+    ui->leAreaMax->setValidator(new QRegularExpressionValidator(areaPattern, this));
+    ui->lePriceMin->setValidator(new QRegularExpressionValidator(rentPattern, this));
+    ui->lePriceMax->setValidator(new QRegularExpressionValidator(rentPattern, this));
+    ui->leMaxPerM2->setValidator(new QRegularExpressionValidator(perM2Pattern, this));
+
+    filterAnimation = new QPropertyAnimation(ui->filterPanel, "maximumHeight", this);
+    filterAnimation->setDuration(250);
+    filterAnimation->setEasingCurve(QEasingCurve::InOutCubic);
+    connect(filterAnimation, &QPropertyAnimation::finished, this, [this]() {
+        if (ui->btnFilters->isChecked())
+            ui->filterPanel->setMaximumHeight(QWIDGETSIZE_MAX);
+        else
+            ui->filterPanel->hide();
+    });
+
+    connect(ui->actionAddFlat, &QAction::triggered, this, &MainWindow::on_btnAdd_clicked);
+    connect(ui->actionApplyFilters, &QAction::triggered, this, &MainWindow::on_btnApply_clicked);
+    connect(ui->actionResetFilters, &QAction::triggered, this, &MainWindow::resetFilters);
+    connect(ui->actionSort, &QAction::triggered, this, &MainWindow::on_btnSort_clicked);
+    connect(ui->actionReportMinMax, &QAction::triggered, this, &MainWindow::showMinMaxReport);
+    connect(ui->actionReportGroups, &QAction::triggered, this, &MainWindow::showGroupReport);
+
+    ui->cbSortBy->addItem("Площа", int(FlatCatalog::SortByArea));
+    ui->cbSortBy->addItem("Оренда", int(FlatCatalog::SortByRent));
+    ui->cbSortBy->addItem("Кількість кімнат", int(FlatCatalog::SortByRooms));
+    ui->cbSortBy->addItem("Ціна за м²", int(FlatCatalog::SortByPricePerM2));
+    ui->cbSortBy->addItem("Поверх", int(FlatCatalog::SortByFloor));
+
+    QPixmap logo(":/app_icon.jpg");
+    if (!logo.isNull())
+        ui->lblLogoIcon->setPixmap(logo.scaled(64, 64, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+
+    ui->flatsContainer->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->flatsContainer, &QWidget::customContextMenuRequested, this,
+            [this](const QPoint &pos) {
+                QMenu menu(this);
+                menu.addAction(ui->actionAddFlat);
+                menu.addAction(ui->actionResetFilters);
+                menu.exec(ui->flatsContainer->mapToGlobal(pos));
+            });
+
+    loadCatalog();
+    refreshAll();
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::on_btnAdd_clicked()
+{
+    AddFlatDialog dialog(this);
+    if (dialog.exec() != QDialog::Accepted)
+        return;
+
+    try {
+        catalog.add(dialog.getFlat());
+    }
+    catch (const CError &e) {
+        QMessageBox::warning(this, "Помилка збереження", e.getMessage());
+        return;
+    }
+
+    refreshAll();
+    logMessage("Квартиру додано");
 }
 
 void MainWindow::on_btnApply_clicked()
@@ -39,15 +123,21 @@ void MainWindow::on_btnApply_clicked()
 void MainWindow::on_btnReports_clicked()
 {
     QMenu menu(this);
-    QAction *minMax = menu.addAction("Мін. і макс. оренда по районах");
-    QAction *groups = menu.addAction("Групування за кількістю кімнат");
+    menu.addAction(ui->actionReportMinMax);
+    menu.addAction(ui->actionReportGroups);
+    menu.exec(ui->btnReports->mapToGlobal(QPoint(ui->btnReports->width(), 0)));
+}
 
-    QAction *chosen = menu.exec(ui->btnReports->mapToGlobal(QPoint(ui->btnReports->width(), 0)));
+void MainWindow::on_btnSort_clicked()
+{
+    QVector<Flat> sorted = currentList;
+    FlatCatalog::SortField field =
+        static_cast<FlatCatalog::SortField>(ui->cbSortBy->currentData().toInt());
+    bool ascending = !ui->btnSortDir->isChecked();
 
-    if (chosen == minMax)
-        analyzeMinMaxRentByDistrict();
-    else if (chosen == groups)
-        groupByRooms();
+    FlatCatalog::selectionSort(sorted, field, ascending);
+    showFlats(sorted);
+    logMessage(QString("Відсортовано: %1").arg(ui->cbSortBy->currentText()));
 }
 
 void MainWindow::on_btnSortDir_toggled(bool checked)
@@ -55,55 +145,176 @@ void MainWindow::on_btnSortDir_toggled(bool checked)
     ui->btnSortDir->setText(checked ? "↓" : "↑");
 }
 
+void MainWindow::on_btnFilters_toggled(bool checked)
+{
+    QWidget *panel = ui->filterPanel;
+    filterAnimation->stop();
+
+    if (checked) {
+        panel->setMaximumHeight(0);
+        panel->show();
+        filterAnimation->setStartValue(0);
+        filterAnimation->setEndValue(panel->sizeHint().height());
+    } else {
+        filterAnimation->setStartValue(panel->height());
+        filterAnimation->setEndValue(0);
+    }
+    filterAnimation->start();
+}
+
+void MainWindow::on_actionAbout_triggered()
+{
+    QMessageBox::about(this, "Про програму",
+                       "SayMyНайм\nКаталог квартир для довгострокової оренди\nКурсова робота, C++ / Qt");
+}
+
+void MainWindow::loadCatalog()
+{
+    QStringList warnings = catalog.load();
+
+    for (const QString &w : warnings)
+        logMessage(w);
+    if (!warnings.isEmpty())
+        logMessage(QString("Пропущено пошкоджених записів: %1").arg(warnings.size()));
+}
+
+void MainWindow::refreshAll()
+{
+    fillDistricts();
+    updateFilterHints();
+    showFlats(catalog.all());
+}
+
 void MainWindow::fillDistricts()
 {
+    QString current = ui->cbDistrict->currentText();
+
     ui->cbDistrict->clear();
-    for (const Flat &f : flats) {
-        QString d = f.getDistrict().trimmed();
-        if (!d.isEmpty() && ui->cbDistrict->findText(d, Qt::MatchFixedString) < 0)
-            ui->cbDistrict->addItem(d);
+    ui->cbDistrict->addItems(catalog.districts());
+
+    int index = ui->cbDistrict->findText(current, Qt::MatchFixedString);
+    if (index >= 0)
+        ui->cbDistrict->setCurrentIndex(index);
+}
+
+void MainWindow::updateFilterHints()
+{
+    FlatStats s = catalog.stats();
+
+    if (s.empty) {
+        ui->leAreaMin->setPlaceholderText("від");
+        ui->leAreaMax->setPlaceholderText("до");
+        ui->lePriceMin->setPlaceholderText("від");
+        ui->lePriceMax->setPlaceholderText("до");
+        ui->leMaxPerM2->setPlaceholderText("Ціна за м² до");
+        ui->leAreaMin->setToolTip("Мінімальна площа, м². Порожнє поле означає без обмеження");
+        ui->leAreaMax->setToolTip("Максимальна площа, м². Порожнє поле означає без обмеження");
+        ui->lePriceMin->setToolTip("Мінімальна оренда, ₴ на місяць. Порожнє поле означає без обмеження");
+        ui->lePriceMax->setToolTip("Максимальна оренда, ₴ на місяць. Порожнє поле означає без обмеження");
+        ui->leMaxPerM2->setToolTip("Максимальна ціна за м² для квартир з меблями. Порожнє поле означає без обмеження");
+        return;
     }
+
+    QString areaRange = QString("У каталозі площа від %1 до %2 м². Порожнє поле означає без обмеження")
+                            .arg(s.minArea, 0, 'f', 1).arg(s.maxArea, 0, 'f', 1);
+    QString rentRange = QString("У каталозі оренда від %1 до %2 ₴. Порожнє поле означає без обмеження")
+                            .arg(s.minRent, 0, 'f', 0).arg(s.maxRent, 0, 'f', 0);
+    QString perM2Range = QString("Найбільша ціна за м² у каталозі серед квартир з меблями: %1 ₴. Порожнє поле означає без обмеження")
+                             .arg(s.maxPricePerM2, 0, 'f', 0);
+
+    ui->leAreaMin->setPlaceholderText(QString("від %1").arg(s.minArea, 0, 'f', 1));
+    ui->leAreaMax->setPlaceholderText(QString("до %1").arg(s.maxArea, 0, 'f', 1));
+    ui->lePriceMin->setPlaceholderText(QString("від %1").arg(s.minRent, 0, 'f', 0));
+    ui->lePriceMax->setPlaceholderText(QString("до %1").arg(s.maxRent, 0, 'f', 0));
+    ui->leMaxPerM2->setPlaceholderText(QString("до %1").arg(s.maxPricePerM2, 0, 'f', 0));
+
+    ui->leAreaMin->setToolTip(areaRange);
+    ui->leAreaMax->setToolTip(areaRange);
+    ui->lePriceMin->setToolTip(rentRange);
+    ui->lePriceMax->setToolTip(rentRange);
+    ui->leMaxPerM2->setToolTip(perM2Range);
+}
+
+FlatFilter MainWindow::readFilter() const
+{
+    FlatFilter filter;
+
+    filter.useDistrict = ui->chkUseDistrict->isChecked();
+    filter.district = ui->cbDistrict->currentText().trimmed();
+
+    filter.useRooms = ui->chkUseRooms->isChecked();
+    filter.rooms = ui->spRooms->value();
+
+    filter.useArea = ui->chkUseArea->isChecked();
+    if (filter.useArea) {
+        filter.minArea = parseNumber(ui->leAreaMin->text(), 0.0, "Площа від");
+        filter.maxArea = parseNumber(ui->leAreaMax->text(), FlatFilter::NoLimit, "Площа до");
+    }
+
+    filter.usePrice = ui->chkUsePrice->isChecked();
+    if (filter.usePrice) {
+        filter.minRent = parseNumber(ui->lePriceMin->text(), 0.0, "Оренда від");
+        filter.maxRent = parseNumber(ui->lePriceMax->text(), FlatFilter::NoLimit, "Оренда до");
+    }
+
+    filter.useFurniture = ui->chkFurniture->isChecked();
+    if (filter.useFurniture)
+        filter.maxPricePerM2 = parseNumber(ui->leMaxPerM2->text(), FlatFilter::NoLimit, "Ціна за м² до");
+
+    return filter;
 }
 
 void MainWindow::applyFilters()
 {
-    bool useDistrict  = ui->chkUseDistrict->isChecked();
-    bool useRooms     = ui->chkUseRooms->isChecked();
-    bool useArea      = ui->chkUseArea->isChecked();
-    bool usePrice     = ui->chkUsePrice->isChecked();
-    bool useFurniture = ui->chkFurniture->isChecked();
-
-    QString district = ui->cbDistrict->currentText();
-    int roomsIndex   = ui->cbRooms->currentIndex();
-
-    double minArea = ui->leAreaMin->text().replace(',', '.').toDouble();
-    QString areaMaxText = ui->leAreaMax->text();
-    double maxArea = areaMaxText.isEmpty() ? 1e12 : areaMaxText.replace(',', '.').toDouble();
-
-    double minRent = ui->lePriceMin->text().replace(',', '.').toDouble();
-
-    QString rentMaxText = ui->lePriceMax->text();
-    double maxRent = rentMaxText.isEmpty() ? 1e12 : rentMaxText.replace(',', '.').toDouble();
-
-    QString perM2Text = ui->leMaxPerM2->text();
-    double maxPerM2 = perM2Text.isEmpty() ? 1e12 : perM2Text.replace(',', '.').toDouble();
-
-    QVector<Flat> result;
-    for (const Flat &f : flats) {
-        if (useDistrict && f.getDistrict().compare(district, Qt::CaseInsensitive) != 0)
-            continue;
-        if (useRooms && (roomsIndex == 4 ? f.getRooms() < 5 : f.getRooms() != roomsIndex + 1))
-            continue;
-        if (useArea && (f.getArea() < minArea || f.getArea() > maxArea))
-            continue;
-        if (usePrice && (f.getRent() < minRent || f.getRent() > maxRent))
-            continue;
-        if (useFurniture && (!f.getHasFurniture() || f.pricePerM2() > maxPerM2))
-            continue;
-        result.push_back(f);
+    try {
+        QVector<Flat> result = catalog.find(readFilter());
+        showFlats(result);
+        logMessage(QString("Знайдено квартир: %1").arg(result.size()));
     }
-    showFlats(result);
-    logMessage(QString("Знайдено квартир: %1").arg(result.size()));
+    catch (const CError &e) {
+        QMessageBox::warning(this, "Некоректний фільтр", e.getMessage());
+    }
+}
+
+void MainWindow::resetFilters()
+{
+    ui->chkUseDistrict->setChecked(false);
+    ui->chkUseRooms->setChecked(false);
+    ui->chkUseArea->setChecked(false);
+    ui->chkUsePrice->setChecked(false);
+    ui->chkFurniture->setChecked(false);
+
+    ui->spRooms->setValue(FlatLimits::MinRooms);
+    ui->leAreaMin->clear();
+    ui->leAreaMax->clear();
+    ui->lePriceMin->clear();
+    ui->lePriceMax->clear();
+    ui->leMaxPerM2->clear();
+
+    showFlats(catalog.all());
+    logMessage("Фільтри скинуто");
+}
+
+void MainWindow::clearFlatsGrid()
+{
+    QLayoutItem *item;
+    while ((item = ui->flatsGrid->takeAt(0)) != nullptr) {
+        if (QWidget *w = item->widget()) {
+            w->hide();
+            w->deleteLater();
+        }
+        delete item;
+    }
+}
+
+void MainWindow::addCardToGrid(const Flat &flat, int row, int column, int order)
+{
+    FlatCard *card = new FlatCard(flat);
+    connect(card, &FlatCard::editRequested, this, &MainWindow::editFlat);
+    connect(card, &FlatCard::deleteRequested, this, &MainWindow::deleteFlat);
+
+    ui->flatsGrid->addWidget(card, row, column);
+    card->playAppearAnimation(qMin(order * 40, 400));
 }
 
 void MainWindow::showFlats(const QVector<Flat> &list)
@@ -113,53 +324,11 @@ void MainWindow::showFlats(const QVector<Flat> &list)
 
     const int columns = 3;
     for (int i = 0; i < list.size(); ++i)
-        ui->flatsGrid->addWidget(createFlatCard(list[i]), i / columns, i % columns);
+        addCardToGrid(list[i], i / columns, i % columns, i);
 
     int rows = (list.size() + columns - 1) / columns;
     ui->flatsGrid->addItem(
         new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding), rows, 0);
-}
-
-QFrame *MainWindow::createFlatCard(const Flat &flat)
-{
-    QFrame *card = new QFrame;
-    card->setObjectName("flatCard");
-    card->setFixedWidth(250);
-    card->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Maximum);
-
-    QVBoxLayout *layout = new QVBoxLayout(card);
-    layout->setContentsMargins(12, 12, 12, 12);
-    layout->setSpacing(8);
-
-    QLabel *price = new QLabel(QString::number(flat.getRent(), 'f', 0) + " грн");
-    price->setObjectName("lblCardPrice");
-
-    QLabel *address = new QLabel(flat.getAddress());
-    address->setObjectName("lblAddress");
-    address->setWordWrap(true);
-
-    QLabel *meta = new QLabel(
-        QString("%1 м², %2 кімн., %3/%4 поверх")
-            .arg(flat.getArea(), 0, 'f', 1)
-            .arg(flat.getRooms())
-            .arg(flat.getFloor())
-            .arg(flat.getTotalFloors())
-        );
-    meta->setObjectName("lblMeta");
-
-    layout->addWidget(price, 0, Qt::AlignLeft);
-    layout->addWidget(address);
-    layout->addWidget(meta);
-    return card;
-}
-
-void MainWindow::clearFlatsGrid()
-{
-    QLayoutItem *item;
-    while ((item = ui->flatsGrid->takeAt(0)) != nullptr) {
-        delete item->widget();
-        delete item;
-    }
 }
 
 QWidget *MainWindow::createGroupHeader(const QString &title)
@@ -188,6 +357,7 @@ void MainWindow::showGroupedFlats(const QMap<int, QVector<Flat>> &groups)
 
     const int columns = 3;
     int row = 0;
+    int order = 0;
     for (auto it = groups.constBegin(); it != groups.constEnd(); ++it) {
         const QVector<Flat> &group = it.value();
         QString title = QString("%1 кімн. · %2 шт.").arg(it.key()).arg(group.size());
@@ -195,7 +365,7 @@ void MainWindow::showGroupedFlats(const QMap<int, QVector<Flat>> &groups)
         ++row;
 
         for (int i = 0; i < group.size(); ++i) {
-            ui->flatsGrid->addWidget(createFlatCard(group[i]), row + i / columns, i % columns);;
+            addCardToGrid(group[i], row + i / columns, i % columns, order++);
             currentList.push_back(group[i]);
         }
         row += (group.size() + columns - 1) / columns;
@@ -204,33 +374,55 @@ void MainWindow::showGroupedFlats(const QMap<int, QVector<Flat>> &groups)
         new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding), row, 0);
 }
 
-void MainWindow::groupByRooms()
+void MainWindow::editFlat(const Flat &flat)
 {
-    QMap<int, QVector<Flat>> groups;
-    for (const Flat &f : flats)
-        groups[f.getRooms()].push_back(f);
+    AddFlatDialog dialog(this);
+    dialog.setFlat(flat);
+    if (dialog.exec() != QDialog::Accepted)
+        return;
 
-    for (auto it = groups.begin(); it != groups.end(); ++it)
-        selectionSort(it.value(), SortByRent, true);
+    try {
+        catalog.replace(flat, dialog.getFlat());
+    }
+    catch (const CError &e) {
+        QMessageBox::warning(this, "Помилка збереження", e.getMessage());
+        return;
+    }
 
-    showGroupedFlats(groups);
-    logMessage(QString("Групування за кімнатами: груп %1").arg(groups.size()));
+    refreshAll();
+    logMessage("Квартиру змінено");
 }
 
-void MainWindow::analyzeMinMaxRentByDistrict()
+void MainWindow::deleteFlat(const Flat &flat)
 {
-    QMap<QString, QVector<Flat>> byDistrict;
-    for (const Flat &f : flats)
-        byDistrict[f.getDistrict().trimmed()].push_back(f);
+    QMessageBox::StandardButton answer = QMessageBox::question(
+        this, "Видалення", "Видалити квартиру за адресою " + flat.getAddress() + "?");
+    if (answer != QMessageBox::Yes)
+        return;
 
-    for (auto it = byDistrict.constBegin(); it != byDistrict.constEnd(); ++it) {
-        const QVector<Flat> &group = it.value();
-        Flat minFlat = group.first();
-        Flat maxFlat = group.first();
-        for (const Flat &f : group) {
-            if (f.getRent() < minFlat.getRent()) minFlat = f;
-            if (f.getRent() > maxFlat.getRent()) maxFlat = f;
-        }
+    try {
+        catalog.remove(flat);
+    }
+    catch (const CError &e) {
+        QMessageBox::warning(this, "Помилка збереження", e.getMessage());
+        return;
+    }
+
+    refreshAll();
+    logMessage("Квартиру видалено");
+}
+
+void MainWindow::showMinMaxReport()
+{
+    QMap<QString, QPair<Flat, Flat>> report = catalog.minMaxRentByDistrict();
+    if (report.isEmpty()) {
+        logMessage("Каталог порожній");
+        return;
+    }
+
+    for (auto it = report.constBegin(); it != report.constEnd(); ++it) {
+        const Flat &minFlat = it.value().first;
+        const Flat &maxFlat = it.value().second;
         logMessage(QString("%1: мін. %2 грн (%3), макс. %4 грн (%5)")
                        .arg(it.key())
                        .arg(minFlat.getRent(), 0, 'f', 0)
@@ -240,101 +432,16 @@ void MainWindow::analyzeMinMaxRentByDistrict()
     }
 }
 
+void MainWindow::showGroupReport()
+{
+    QMap<int, QVector<Flat>> groups = catalog.groupByRooms();
+    showGroupedFlats(groups);
+    logMessage(QString("Групування за кімнатами: груп %1").arg(groups.size()));
+}
+
 void MainWindow::logMessage(const QString &text)
 {
     QString time = QTime::currentTime().toString("HH:mm");
-    ui->logView->QTextEdit::append("["+time+"] > "+text);
+    ui->logView->append("[" + time + "] > " + text);
+    ui->statusbar->showMessage(text, 5000);
 }
-
-void MainWindow::on_btnAdd_clicked()
-{
-    AddFlatDialog dialog(this);
-    if (dialog.exec() != QDialog::Accepted)
-        return;
-
-    Flat flat = dialog.getFlat();
-    flats.push_back(flat);
-    appendFlatToFile(flat);
-    showFlats(flats);
-}
-
-QString MainWindow::dataFilePath() const
-{
-    QString folder = QCoreApplication::applicationDirPath();
-    return folder+"/flats.txt";
-}
-
-void MainWindow::appendFlatToFile(const Flat &flat)
-{
-    QFile file(dataFilePath());
-    if (!file.open(QIODevice::Append | QIODevice::Text)){
-        return;
-    }
-    QTextStream out(&file);
-    out.setEncoding(QStringConverter::Utf8);
-    out.setLocale(QLocale::c());
-    out << flat;
-}
-
-void MainWindow::loadFlats()
-{
-    flats.clear();
-    QFile file(dataFilePath());
-
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)){
-        return;
-    }
-
-    QTextStream in(&file);
-    in.setEncoding(QStringConverter::Utf8);
-    in.setLocale(QLocale::c());
-
-    while(!in.atEnd()){
-        Flat f;
-        in >> f;
-        if(f.getAddress().isEmpty()) break;
-        flats.push_back(f);
-    }
-}
-
-double MainWindow::sortKey(const Flat &f, SortField field) const
-{
-    switch (field) {
-    case SortByArea:       return f.getArea();
-    case SortByRent:       return f.getRent();
-    case SortByRooms:      return f.getRooms();
-    case SortByPricePerM2: return f.pricePerM2();
-    case SortByFloor:      return f.getFloor();
-    }
-    return 0;
-}
-
-void MainWindow::selectionSort(QVector<Flat> &list, SortField field, bool ascending)
-{
-    for (int i = 0; i < list.size() - 1; ++i) {
-        int best = i;
-        for (int j = i + 1; j < list.size(); ++j) {
-            bool better = ascending;
-            if (ascending)
-                better = sortKey(list[j], field) < sortKey(list[best], field);
-            else
-                better = sortKey(list[j], field) > sortKey(list[best], field);
-            if (better)
-                best = j;
-        }
-        if (best != i)
-            list.swapItemsAt(i, best);
-    }
-}
-
-void MainWindow::on_btnSort_clicked()
-{
-    QVector<Flat> sorted = currentList;
-    SortField field = static_cast<SortField>(ui->cbSortBy->currentData().toInt());
-    bool ascending = !ui->btnSortDir->isChecked();
-
-    selectionSort(sorted, field, ascending);
-    showFlats(sorted);
-    logMessage(QString("Відсортовано: %1").arg(ui->cbSortBy->currentText()));
-}
-

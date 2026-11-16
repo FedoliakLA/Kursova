@@ -17,6 +17,7 @@ public:
     ~AddFlatDialog();
 
     Flat getFlat() const;
+    void setFlat(const Flat &flat);
 
 private slots:
     void on_btnSave_clicked();
@@ -24,7 +25,8 @@ private slots:
 private:
     Ui::AddFlatDialog *ui;
 
-    bool validateInput();
+    static double parseNumber(const QString &text, bool *ok = nullptr);
+    void validateInput() const;
     void showError(const QString &text);
 };
 
